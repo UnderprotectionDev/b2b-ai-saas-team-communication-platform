@@ -12,10 +12,9 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import { workspaceSchema } from "@/app/schemas/workspace";
+import { WorkspaceSchema, workspaceSchema } from "@/app/schemas/workspace";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -25,19 +24,41 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { orpc } from "@/lib/orpc";
+import { toast } from "sonner";
 
 export const CreateWorkspace = () => {
   const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
 
-  const form = useForm<z.infer<typeof workspaceSchema>>({
+  const form = useForm<WorkspaceSchema>({
     resolver: zodResolver(workspaceSchema),
     defaultValues: {
       name: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof workspaceSchema>) {
-    console.log(values);
+  const createWorkspaceMutation = useMutation(
+    orpc.workspace.create.mutationOptions({
+      onSuccess: (newWorkspace) => {
+        toast.success(`Workspace "${newWorkspace.workspaceName}" created successfully`);
+
+        queryClient.invalidateQueries({
+          queryKey: orpc.workspace.list.key(),
+        });
+
+        form.reset();
+        setOpen(false);
+      },
+      onError: () => {
+        toast.error("Failed to create workspace. Please try again.");
+      },
+    })
+  );
+
+  function onSubmit(values: WorkspaceSchema) {
+    createWorkspaceMutation.mutate(values);
   }
 
   return (
@@ -79,7 +100,9 @@ export const CreateWorkspace = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit">Create Workspace</Button>
+            <Button disabled={createWorkspaceMutation.isPending} type="submit">
+              {createWorkspaceMutation.isPending ? "Creating..." : "Create Workspace"}
+            </Button>
           </form>
         </Form>
       </DialogContent>
