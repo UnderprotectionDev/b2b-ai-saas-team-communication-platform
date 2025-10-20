@@ -6,13 +6,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "gist.github.com",
-        pathname: "/user-attachments/assets/**",
-      },
-      {
-        protocol: "https",
-        hostname: "html.tailus.io",
-        pathname: "/blocks/customers/**",
+        hostname: "avatars.githubusercontent.com",
       },
     ],
   },
