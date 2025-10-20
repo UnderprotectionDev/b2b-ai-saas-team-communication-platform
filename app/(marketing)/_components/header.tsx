@@ -96,7 +96,7 @@ export const HeroHeader = () => {
                 <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
                   {user ? (
                     <>
-                      <Link href="/workspaces" className={buttonVariants({ size: "sm" })}>
+                      <Link href="/workspace" className={buttonVariants({ size: "sm" })}>
                         <span>Dashboard</span>
                       </Link>
                       <LogoutLink className={buttonVariants({ variant: "outline", size: "sm" })}>
