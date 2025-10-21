@@ -27,13 +27,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "@/lib/orpc";
 import { toast } from "sonner";
 import { isDefinedError } from "@orpc/client";
 
 export const CreateNewChannel = () => {
   const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const form = useForm<ChannelNameSchemaType>({
     resolver: zodResolver(ChannelNameSchema),
@@ -46,6 +47,11 @@ export const CreateNewChannel = () => {
     orpc.channel.create.mutationOptions({
       onSuccess: (newChannel) => {
         toast.success(`Channel ${newChannel.name} created successfully!`);
+
+        queryClient.invalidateQueries({
+          queryKey: orpc.channel.list.queryKey(),
+        });
+
         form.reset();
         setOpen(false);
       },
