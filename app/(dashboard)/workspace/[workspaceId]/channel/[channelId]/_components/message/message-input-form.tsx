@@ -27,16 +27,16 @@ export const MessageInputForm = ({ channelId }: MessageInputFormProps) => {
     orpc.message.create.mutationOptions({
       onSuccess: () => {
         toast.success("message created successfully");
+        form.reset();
       },
       onError: () => {
-        toast.error("something went wrong");
+        toast.error("Failed to send message. Please try again.");
       },
     })
   );
 
   function onSubmit(values: CreateMessageSchemaType) {
     createMessageMutation.mutate(values);
-    form.reset();
   }
 
   return (
@@ -48,7 +48,11 @@ export const MessageInputForm = ({ channelId }: MessageInputFormProps) => {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                <MessageComposer value={field.value} onChange={field.onChange} />
+                <MessageComposer
+                  value={field.value}
+                  onChange={field.onChange}
+                  onSubmit={() => onSubmit(form.getValues())}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
