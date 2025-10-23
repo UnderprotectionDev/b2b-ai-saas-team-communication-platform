@@ -13,7 +13,7 @@ export const MessageComposer = ({ value, onChange }: MessageComposerProps) => {
       <RichTextEditor
         field={{ value, onChange }}
         sendButton={
-          <Button size="sm" type="button" className="mr-2">
+          <Button size="sm" type="submit" className="mr-2">
             <SendIcon className="size-4 mr-1" />
             Send
           </Button>

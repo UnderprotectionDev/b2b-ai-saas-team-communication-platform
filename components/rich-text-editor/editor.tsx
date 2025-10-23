@@ -42,9 +42,9 @@ export const RichTextEditor = ({ field, sendButton, footerLeft }: RichTextEditor
         className="max-h-[400px] overflow-y-auto marker:text-primary"
       />
 
-      <div className="flex items-center justify-between gap-2 ox-3 py-2 border-t border-input bg-card">
+      <div className="flex items-center justify-between gap-2 px-3 py-2 border-t border-input bg-card">
         <div className="min-h-8 flex items-center">{footerLeft}</div>
-        <div className="shing-0">{sendButton}</div>
+        <div className="shrink-0">{sendButton}</div>
       </div>
     </div>
   );
