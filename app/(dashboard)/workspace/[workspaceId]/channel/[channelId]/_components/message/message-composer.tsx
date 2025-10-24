@@ -26,7 +26,7 @@ export const MessageComposer = ({
           </Button>
         }
         footerLeft={
-          <Button size="sm" type="button" variant="outline" className="ml-2">
+          <Button size="sm" type="button" variant="outline">
             <ImageIcon className="size-4 mr-1" />
             Attach
           </Button>
