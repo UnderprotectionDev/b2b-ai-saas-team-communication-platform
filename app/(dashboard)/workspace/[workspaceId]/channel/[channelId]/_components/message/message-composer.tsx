@@ -1,12 +1,16 @@
 import { RichTextEditor } from "@/components/rich-text-editor/editor";
+import { ImageUploadModal } from "@/components/rich-text-editor/image-upload-modal";
 import { Button } from "@/components/ui/button";
+import { UseAttachmentUploadType } from "@/hooks/use-attachment-upload";
 import { ImageIcon, SendIcon } from "lucide-react";
+import { AttachmentChip } from "./attachment-chip";
 
 interface MessageComposerProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
   isSubmitting?: boolean;
+  upload: UseAttachmentUploadType;
 }
 
 export const MessageComposer = ({
@@ -14,6 +18,7 @@ export const MessageComposer = ({
   onChange,
   onSubmit,
   isSubmitting,
+  upload,
 }: MessageComposerProps) => {
   return (
     <>
@@ -26,11 +31,26 @@ export const MessageComposer = ({
           </Button>
         }
         footerLeft={
-          <Button size="sm" type="button" variant="outline">
-            <ImageIcon className="size-4 mr-1" />
-            Attach
-          </Button>
+          upload.stagedImageUrl ? (
+            <AttachmentChip url={upload.stagedImageUrl} onRemove={upload.clear} />
+          ) : (
+            <Button
+              onClick={() => upload.setIsOpen(true)}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              <ImageIcon className="size-4 mr-1" />
+              Attach
+            </Button>
+          )
         }
+      />
+
+      <ImageUploadModal
+        open={upload.isOpen}
+        onOpenChange={upload.setIsOpen}
+        onUploaded={(url) => upload.onUploaded(url)}
       />
     </>
   );

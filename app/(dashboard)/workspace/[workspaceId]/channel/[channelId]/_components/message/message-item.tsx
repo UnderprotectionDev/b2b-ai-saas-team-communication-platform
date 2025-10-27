@@ -15,7 +15,7 @@ export const MessageItem = ({ message }: MessageItemProps) => {
         alt="User Avatar"
         width={32}
         height={32}
-        className="size-8 rounded-lg"
+        className="size-8 rounded-full object-cover"
       />
       <div className="flex-1 space-y-1 min-w-0">
         <div className="flex items-center gap-x-2">
@@ -42,6 +42,17 @@ export const MessageItem = ({ message }: MessageItemProps) => {
           content={JSON.parse(message.content)}
           className="text-sm break-words prose dark:prose-invert max-w-none mark:text-primary"
         />
+        {message.imageUrl && (
+          <div className="mt-2">
+            <Image
+              src={message.imageUrl}
+              alt="Message Attachment"
+              width={512}
+              height={512}
+              className="rounded-md max-h-[320px] w-auto object-contain"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
