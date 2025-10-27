@@ -14,21 +14,6 @@ const aj = arcjet({
   ],
 });
 
-// async function existingMiddleware(req: NextRequest) {
-//   const { getClaim } = getKindeServerSession();
-//   const orgCode = await getClaim("org_code");
-
-//   const url = req.nextUrl;
-
-//   if (url.pathname.startsWith("/workspace") && !url.pathname.includes(orgCode?.value || "")) {
-//     url.pathname = `/workspace/${orgCode?.value}`;
-
-//     return NextResponse.redirect(url);
-//   }
-
-//   return NextResponse.next();
-// }
-
 async function existingMiddleware(req: NextRequest) {
   const anyReq = req as {
     nextUrl: NextRequest["nextUrl"];
