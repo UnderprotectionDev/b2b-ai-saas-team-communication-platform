@@ -16,6 +16,7 @@ import { orpc } from "@/lib/orpc";
 import { LogoutLink, PortalLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { CreditCardIcon, LogOutIcon, UserIcon } from "lucide-react";
+import Image from "next/image";
 
 export const UserNav = () => {
   const {
@@ -31,10 +32,11 @@ export const UserNav = () => {
           className="size-12 rounded-xl hover:rounded-lg transition-all duration-200 bg-background/50 border-border/50 hover:bg-accent hover:text-accent-foreground"
         >
           <Avatar>
-            <AvatarImage
+            <Image
               src={getAvatar(user.picture, user.email!)}
               alt="User Image"
               className="object-cover"
+              fill
             />
             <AvatarFallback>{user.given_name?.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
