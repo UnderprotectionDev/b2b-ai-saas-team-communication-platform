@@ -4,7 +4,7 @@ import { orpc } from "@/lib/orpc";
 import { MessageItem } from "./message/message-item";
 import { useParams } from "next/navigation";
 import { Message } from "@/lib/generated/prisma";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/general/empty-state";
@@ -44,6 +44,10 @@ export const MessagesList = () => {
       staleTime: 30_000,
       refetchOnWindowFocus: false,
     });
+
+  const {
+    data: { user },
+  } = useSuspenseQuery(orpc.workspace.list.queryOptions());
 
   // scroll to the bottom when messages first load
   useEffect(() => {
@@ -178,7 +182,9 @@ export const MessagesList = () => {
             />
           </div>
         ) : (
-          items?.map((message: Message) => <MessageItem key={message.id} message={message} />)
+          items?.map((message: Message) => (
+            <MessageItem key={message.id} message={message} currentUserId={user.id} />
+          ))
         )}
 
         <div ref={bottomRef}></div>
