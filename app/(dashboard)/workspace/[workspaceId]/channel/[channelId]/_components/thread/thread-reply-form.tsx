@@ -10,17 +10,22 @@ import { MessageComposer } from "../message/message-composer";
 import { useAttachmentUpload } from "@/hooks/use-attachment-upload";
 import { useEffect, useState } from "react";
 import { orpc } from "@/lib/orpc";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Message } from "@/lib/generated/prisma";
+import { KindeUser } from "@kinde-oss/kinde-auth-nextjs";
+import { getAvatar } from "@/lib/get-avatar";
 
 interface ThreadReplyFormProps {
   threadId: string;
+  user: KindeUser<Record<string, unknown>>;
 }
 
-export const ThreadReplyForm = ({ threadId }: ThreadReplyFormProps) => {
+export const ThreadReplyForm = ({ threadId, user }: ThreadReplyFormProps) => {
   const { channelId } = useParams<{ channelId: string }>();
   const upload = useAttachmentUpload();
   const [editorKey, setEditorKey] = useState(0);
+  const queryClient = useQueryClient();
 
   const form = useForm<CreateMessageSchemaType>({
     resolver: zodResolver(createMessageSchema),
@@ -37,13 +42,61 @@ export const ThreadReplyForm = ({ threadId }: ThreadReplyFormProps) => {
 
   const createMessageMutation = useMutation(
     orpc.message.create.mutationOptions({
-      onSuccess: () => {
+      onMutate: async (data) => {
+        const listOptions = orpc.message.thread.list.queryOptions({
+          input: {
+            messageId: threadId,
+          },
+        });
+        await queryClient.cancelQueries({ queryKey: listOptions.queryKey });
+
+        const previous = queryClient.getQueryData(listOptions.queryKey);
+
+        const optimistic: Message = {
+          id: `optimistic: ${crypto.randomUUID()}`,
+          content: data.content,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          authorId: user.id,
+          authorEmail: user.email!,
+          authorName: user.given_name ?? "John Fisher",
+          authorAvatar: getAvatar(user.picture, user.email!),
+          channelId: channelId,
+          threadId: threadId,
+          imageUrl: data.imageUrl ?? null,
+        };
+
+        queryClient.setQueryData(listOptions.queryKey, (old) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            messages: [...old.messages, optimistic],
+          };
+        });
+
+        return { listOptions, previous };
+      },
+      onSuccess: (_data, _vars, ctx) => {
+        queryClient.invalidateQueries({
+          queryKey: ctx.listOptions.queryKey,
+        });
+
         form.reset({ channelId, content: "", threadId });
         upload.clear();
         setEditorKey((prev) => prev + 1);
+
         return toast.success("Message sent successfully!");
       },
-      onError: () => {
+      onError: (_err, _vars, ctx) => {
+        if (!ctx) return;
+
+        const { listOptions, previous } = ctx;
+
+        if (previous) {
+          queryClient.setQueryData(listOptions.queryKey, previous);
+        }
+
         return toast.error("Failed to send message.");
       },
     })
