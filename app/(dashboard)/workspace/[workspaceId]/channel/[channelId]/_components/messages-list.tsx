@@ -3,12 +3,12 @@
 import { orpc } from "@/lib/orpc";
 import { MessageItem } from "./message/message-item";
 import { useParams } from "next/navigation";
-import { Message } from "@/lib/generated/prisma";
 import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/general/empty-state";
 import { ChevronDownIcon, Loader2 } from "lucide-react";
+import { MessageListItem } from "@/lib/types";
 
 export const MessagesList = () => {
   const { channelId } = useParams<{ channelId: string }>();
@@ -160,7 +160,7 @@ export const MessagesList = () => {
     const el = scrollRef.current;
     if (!el) return;
 
-    bottomRef.current?.scrollIntoView({ block: "end" });
+    bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
 
     setIsAtBottom(true);
   };
@@ -182,7 +182,7 @@ export const MessagesList = () => {
             />
           </div>
         ) : (
-          items?.map((message: Message) => (
+          items?.map((message: MessageListItem) => (
             <MessageItem key={message.id} message={message} currentUserId={user.id} />
           ))
         )}
