@@ -10,11 +10,12 @@ import { MessageComposer } from "../message/message-composer";
 import { useAttachmentUpload } from "@/hooks/use-attachment-upload";
 import { useEffect, useState } from "react";
 import { orpc } from "@/lib/orpc";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Message } from "@/lib/generated/prisma";
 import { KindeUser } from "@kinde-oss/kinde-auth-nextjs";
 import { getAvatar } from "@/lib/get-avatar";
+import { MessageListItem } from "@/lib/types";
 
 interface ThreadReplyFormProps {
   threadId: string;
@@ -48,6 +49,14 @@ export const ThreadReplyForm = ({ threadId, user }: ThreadReplyFormProps) => {
             messageId: threadId,
           },
         });
+
+        type MessagePage = {
+          items: Array<MessageListItem>;
+          nextCursor?: string;
+        };
+
+        type InfiniteMessage = InfiniteData<MessagePage>;
+
         await queryClient.cancelQueries({ queryKey: listOptions.queryKey });
 
         const previous = queryClient.getQueryData(listOptions.queryKey);
@@ -73,6 +82,19 @@ export const ThreadReplyForm = ({ threadId, user }: ThreadReplyFormProps) => {
             ...old,
             messages: [...old.messages, optimistic],
           };
+        });
+
+        // Optimistically bump reliesCount in main message list for the parent message
+        queryClient.setQueryData<InfiniteMessage>(["message.list", channelId], (old) => {
+          if (!old) return old;
+
+          const pages = old.pages.map((page) => ({
+            ...page,
+            items: page.items.map((m) =>
+              m.id === threadId ? { ...m, repliesCount: m.repliesCount + 1 } : m
+            ),
+          }));
+          return { ...old, pages };
         });
 
         return { listOptions, previous };
@@ -124,6 +146,7 @@ export const ThreadReplyForm = ({ threadId, user }: ThreadReplyFormProps) => {
                   onChange={field.onChange}
                   upload={upload}
                   onSubmit={() => onSubmit(form.getValues())}
+                  isSubmitting={createMessageMutation.isPending}
                 />
               </FormControl>
               <FormMessage />
