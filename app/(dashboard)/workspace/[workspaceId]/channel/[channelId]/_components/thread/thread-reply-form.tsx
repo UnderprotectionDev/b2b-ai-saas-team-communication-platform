@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { createMessageSchema, CreateMessageSchemaType } from "@/app/schemas/message";
 import { useParams } from "next/navigation";
-
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { MessageComposer } from "../message/message-composer";
 import { useAttachmentUpload } from "@/hooks/use-attachment-upload";
@@ -12,7 +11,6 @@ import { useEffect, useState } from "react";
 import { orpc } from "@/lib/orpc";
 import { InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Message } from "@/lib/generated/prisma";
 import { KindeUser } from "@kinde-oss/kinde-auth-nextjs";
 import { getAvatar } from "@/lib/get-avatar";
 import { MessageListItem } from "@/lib/types";
@@ -61,7 +59,7 @@ export const ThreadReplyForm = ({ threadId, user }: ThreadReplyFormProps) => {
 
         const previous = queryClient.getQueryData(listOptions.queryKey);
 
-        const optimistic: Message = {
+        const optimistic: MessageListItem = {
           id: `optimistic: ${crypto.randomUUID()}`,
           content: data.content,
           createdAt: new Date(),
@@ -73,6 +71,8 @@ export const ThreadReplyForm = ({ threadId, user }: ThreadReplyFormProps) => {
           channelId: channelId,
           threadId: threadId,
           imageUrl: data.imageUrl ?? null,
+          reactions: [],
+          replyCount: 0,
         };
 
         queryClient.setQueryData(listOptions.queryKey, (old) => {
@@ -91,7 +91,7 @@ export const ThreadReplyForm = ({ threadId, user }: ThreadReplyFormProps) => {
           const pages = old.pages.map((page) => ({
             ...page,
             items: page.items.map((m) =>
-              m.id === threadId ? { ...m, repliesCount: m.repliesCount + 1 } : m
+              m.id === threadId ? { ...m, replyCount: m.replyCount + 1 } : m
             ),
           }));
           return { ...old, pages };
